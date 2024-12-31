@@ -1,0 +1,30 @@
+byte x = 15b;
+print("Hello\nyou!");
+
+"Hello \x57orld!\r\nThis\tis\t\x63oo\x6C, as always."
+
+hello@world
+
+"Another string with \quadro as invalid escape sequence"
+
+"Hey \xF"
+
+"Hey \xFT by the way"
+
+"It's alright \x6aQQ"
+"Hey \xqqqqqqqqq"
+
+int main() {
+	int x = 5;
+	int powerOfx = x * x;
+	print(x);
+	return 0;
+}
+
+// Hello world program
+
+int main() {
+	print("Hello world!");
+	print("Nice,\nisn't\nit?");
+	return 0;
+}

@@ -1,0 +1,108 @@
+entered initializer
+entered Funcs
+entered FuncDecl
+entered id
+entered typush
+entered Formals
+entered Statements
+entered VarDecl
+entered id
+entered typush
+entered binop
+entered binop
+entered int
+entered int
+intyee
+intyee
+entered int
+intyee
+intyee
+entered VarDecl
+entered id
+entered typush
+entered numb
+entered Call
+entered id
+entered ExpList
+entered and
+entered relop
+entered id
+entered id
+xyee
+yyee
+entered relop
+entered id
+entered int
+xyee
+intyee
+entered VarDecl
+entered id
+entered typush
+entered FuncDecl
+entered id
+entered typush
+entered Formals
+entered Formal
+entered id
+entered typush
+entered Statements
+entered VarDecl
+entered id
+entered typush
+entered int
+entered relop
+entered id
+entered int
+iyee
+intyee
+entered Statements
+entered Call
+entered id
+entered ExpList
+entered string
+entered Call
+entered id
+entered ExpList
+entered id
+entered Assign
+entered id
+entered binop
+entered id
+entered int
+iyee
+intyee
+assign out 
+entered id
+entered Statements
+entered VarDecl
+entered id
+entered typush
+entered int
+entered Call
+entered id
+entered ExpList
+entered string
+---begin global scope---
+print (string) -> void
+printi (int) -> void
+main () -> void
+printOk (bool) -> void
+  ---begin scope---
+  x int 0
+  y byte 1
+  z int 2
+  ---end scope---
+  ---begin scope---
+  isOk bool -1
+  i int 0
+    ---begin scope---
+      ---begin scope---
+      ---end scope---
+    ---end scope---
+    ---begin scope---
+      ---begin scope---
+      x int 0
+      ---end scope---
+    ---end scope---
+  ---end scope---
+---end global scope---
