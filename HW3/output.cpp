@@ -611,7 +611,17 @@ namespace output
     {
         if(DEBUG) /*%%%*/ cout << "entered funcdecl" << endl; /*%%%*/
 
-        this->stack.addFormals(node.getFormals());
+        std::vector<std::shared_ptr<ast::Formal>> formalsToBeAdded = node.getFormals();
+        //check if the formal's names suits a function name
+        for (auto it = formalsToBeAdded.begin(); it != formalsToBeAdded.end(); ++it)
+        {
+            symbol_table::SymTableEntry entry = this->stack.isInsideSymolTable_byFallOutBoy((*it)->id->getVal());
+            if (entry != nullEntry) {
+                errorDef(node.line, (*it)->id->getVal());
+            }
+        }
+        this->stack.addFormals(formalsToBeAdded);
+
         node.id->accept(*this);
         node.return_type->accept(*this);
         node.formals->accept(*this);
@@ -640,7 +650,7 @@ namespace output
     void PrintVisitor::visit(ast::Funcs &node)
     {
         if(DEBUG) /*%%%*/ cout << "entered funcs" << endl; /*%%%*/
-        
+
         bool isThereMain = false;
         for (auto it = node.funcs.begin(); it != node.funcs.end(); ++it)
         { // emit functions decls
