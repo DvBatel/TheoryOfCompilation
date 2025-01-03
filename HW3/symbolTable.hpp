@@ -31,10 +31,8 @@ namespace symbol_table
         ast::BuiltInType getType() { return this->m_type; }
         ast::BuiltInType getRetType() { return this->m_ret_type; }
         int getOff() { return this->m_offset; }
-        std::vector<ast::BuiltInType> getgetFormals() 
-        {
-            return this->m_formalTypes; 
-        } // gotta get gotta get gotta get gotta get those formasl #jypapi
+        std::vector<ast::BuiltInType> getgetFormals() { return this->m_formalTypes; }
+        // gotta get gotta get gotta get gotta get those formasl #jypapi
 
         bool operator==(symbol_table::SymTableEntry x)
         {

@@ -1,18 +1,9 @@
 #include "stack.hpp"
 #include <iostream>
 
-void stack::Stack::addFormals(vector<shared_ptr<Formal>> formals)
+void stack::Stack::newSymbol(string name, ast::BuiltInType type, ast::BuiltInType ret_type, std::vector<ast::BuiltInType> formalTypes, bool isFormal)
 {
-    int offsetGeorge = -1;
-    for (auto it = formals.begin(); it != formals.end(); it++)
-    {
-        m_table.front().add(symbol_table::SymTableEntry((*it).get()->id.get()->value, (*it).get()->type.get()->type, offsetGeorge--));
-    }
-}
-
-void stack::Stack::newSymbol(string name, ast::BuiltInType type, ast::BuiltInType ret_type, std::vector<ast::BuiltInType> formalTypes)
-{
-    m_table.front().add(symbol_table::SymTableEntry(name, type, type != FUCK ? m_offset++ : 0, ret_type, formalTypes));
+    m_table.front().add(symbol_table::SymTableEntry(name, type, (type != FUCK && !isFormal) ? m_offset++ : 0, ret_type, formalTypes));
 }
 
 void stack::Stack::newScope()
@@ -34,7 +25,8 @@ void stack::Stack::popScope()
             this->m_offset = 0;
         }
     }
-    else {
+    else
+    {
         m_table.erase(m_table.begin());
     }
     // they say the end is near
@@ -61,6 +53,7 @@ int stack::Stack::getLatestOffset()
     return this->m_offset - 1;
 }
 
-bool stack::Stack::checkIfMain(const std::string &id,const ast::BuiltInType &returnType,const std::vector<ast::BuiltInType> &paramTypes) {
+bool stack::Stack::checkIfMain(const std::string &id, const ast::BuiltInType &returnType, const std::vector<ast::BuiltInType> &paramTypes)
+{
     return symbol_table::SymTableEntry(id, ast::BuiltInType::FUCK, 0, returnType, paramTypes) == mainEntry;
 }

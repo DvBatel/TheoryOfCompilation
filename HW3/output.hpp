@@ -8,6 +8,7 @@
 #include "nodes.hpp"
 #include "stack.hpp"
 #include "symbolTable.hpp"
+#include <optional>
 
 namespace output {
     /* Error handling functions */
@@ -87,13 +88,13 @@ namespace output {
 
         void visit(ast::ID &node) override;
 
-        void checkNode(ast::Exp &node);
+        void assureNumber(ast::Exp &node);
 
         void visit(ast::BinOp &node) override;
 
         void visit(ast::RelOp &node) override;
 
-        void assureBoolean(ast::Exp &node1, ast::Exp &node2, int nodeLine);
+        void assureBoolean(ast::Exp &node1, ast::Exp &node2);
 
         void visit(ast::Not &node) override;
 
@@ -123,7 +124,11 @@ namespace output {
 
         void visit(ast::While &node) override;
 
-        void assureAssignCorrect(std::shared_ptr<ast::Exp> exp, ast::BuiltInType nodeType,int nodeLine);
+        optional<int> getNumericalValue(const std::shared_ptr<ast::Exp> &exp);
+
+        bool isValueTooLargeForByte(const std::shared_ptr<ast::Exp> &exp);
+
+        void assureAssignCorrect(std::shared_ptr<ast::Exp> exp, ast::BuiltInType nodeType);
 
         void visit(ast::VarDecl &node) override;
 

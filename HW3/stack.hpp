@@ -19,10 +19,10 @@ namespace stack {
       
     Stack() = default;
     ~Stack() = default;
+    // in loving memory ♥
+    // string addFormals(vector<shared_ptr<Formal>> formals);
 
-    void addFormals(vector<shared_ptr<Formal>> formals);
-
-    void newSymbol(string name, ast::BuiltInType type, ast::BuiltInType ret_type = ast::BuiltInType::FUCK, std::vector<ast::BuiltInType> formalTypes =  std::vector<ast::BuiltInType>());
+    void newSymbol(string name, ast::BuiltInType type, ast::BuiltInType ret_type = ast::BuiltInType::FUCK, std::vector<ast::BuiltInType> formalTypes =  std::vector<ast::BuiltInType>(), bool isFormal = 0);
 
     void newScope();
 
