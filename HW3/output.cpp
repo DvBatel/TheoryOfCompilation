@@ -631,58 +631,6 @@ namespace output
         this->inLoop--;
     }
 
-    /*std::optional<int> PrintVisitor::getNumericalValue(const std::shared_ptr<ast::Exp> &exp)
-    {
-        if (auto num = std::dynamic_pointer_cast<ast::Num>(exp))
-        {
-            return num->value;
-        }
-
-        else if (auto numB = std::dynamic_pointer_cast<ast::NumB>(exp))
-        {
-            return numB->value;
-        }
-        else if (auto num = std::dynamic_pointer_cast<ast::ID>(exp))
-        {
-            return NO_VALUE_DURING_COMPILATION;
-        }
-        else if (auto castExp = std::dynamic_pointer_cast<ast::Cast>(exp))
-        {
-            return getNumericalValue(castExp->exp); // Recursively check the cast expression
-        }
-        else if (auto binOpExp = std::dynamic_pointer_cast<ast::BinOp>(exp))
-        {
-            // Handle binary operations. Here we assume `+` for simplicity; adapt as needed.
-            auto leftValue = getNumericalValue(binOpExp->left);
-            auto rightValue = getNumericalValue(binOpExp->right);
-            switch (binOpExp->op)
-            {
-            case ast::BinOpType::ADD:
-                return *leftValue + *rightValue;
-                break;
-            case ast::BinOpType::SUB:
-                return *leftValue - *rightValue;
-                break;
-            case ast::BinOpType::MUL:
-                return *leftValue * *rightValue;
-                break;
-            case ast::BinOpType::DIV:
-                if (!*rightValue) return NO_VALUE_DURING_COMPILATION;
-                return *leftValue / *rightValue;
-                break;
-            default:
-                break;
-            }
-        }
-        return std::nullopt; // No valid numerical value found
-    }
-
-    bool PrintVisitor::isValueTooLargeForByte(const std::shared_ptr<ast::Exp> &exp)
-    {
-        auto value = getNumericalValue(exp);
-        return value && *value > MAX_BYTE;
-    }*/
-
     void PrintVisitor::assureAssignCorrect(std::shared_ptr<ast::Exp> exp, ast::BuiltInType nodeType)
     {
         symbol_table::SymTableEntry entry = this->stack.isInsideSymolTable_byFallOutBoy(exp->type_def);
@@ -724,11 +672,6 @@ namespace output
                 }
                 errorUndef(exp->line, exp->type_def);
             }
-            /*else if (isValueTooLargeForByte(exp))
-                {
-                    auto valueOpt = getNumericalValue(exp);
-                    errorByteTooLarge(exp->line, valueOpt ? *valueOpt : 0);
-                }*/
             // she's a certified freak
             // ten day a week
             break;
