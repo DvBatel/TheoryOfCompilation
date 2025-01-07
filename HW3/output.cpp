@@ -630,7 +630,8 @@ namespace output
         this->printer.endScope();
         this->inLoop--;
     }
-    std::optional<int> PrintVisitor::getNumericalValue(const std::shared_ptr<ast::Exp> &exp)
+
+    /*std::optional<int> PrintVisitor::getNumericalValue(const std::shared_ptr<ast::Exp> &exp)
     {
         if (auto num = std::dynamic_pointer_cast<ast::Num>(exp))
         {
@@ -680,7 +681,7 @@ namespace output
     {
         auto value = getNumericalValue(exp);
         return value && *value > MAX_BYTE;
-    }
+    }*/
 
     void PrintVisitor::assureAssignCorrect(std::shared_ptr<ast::Exp> exp, ast::BuiltInType nodeType)
     {
@@ -722,12 +723,12 @@ namespace output
                     errorMismatch(exp->line);
                 }
                 errorUndef(exp->line, exp->type_def);
-                if (isValueTooLargeForByte(exp))
+            }
+            /*else if (isValueTooLargeForByte(exp))
                 {
                     auto valueOpt = getNumericalValue(exp);
                     errorByteTooLarge(exp->line, valueOpt ? *valueOpt : 0);
-                }
-            }
+                }*/
             // she's a certified freak
             // ten day a week
             break;
