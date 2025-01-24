@@ -2,6 +2,7 @@
 
 namespace generate
 {
+    const int CODEDEBUG = 0;
     /* CodeBuffer class */
 
     CodeBuffer::CodeBuffer() : labelCount(0), varCount(0), stringCount(0) {}
@@ -10,7 +11,6 @@ namespace generate
     {
         return "%label_" + std::to_string(labelCount++);
     }
-
     std::string CodeBuffer::freshVar()
     {
         return "%t" + std::to_string(varCount++);
@@ -47,6 +47,38 @@ namespace generate
     }
 
     /* GenCode class */
+
+    std::string getLLVMType(ast::BuiltInType type)
+    {
+        switch (type)
+        {
+        case ast::BuiltInType::INT:
+            return "i32";
+            break;
+        case ast::BuiltInType::BYTE:
+            return "i8";
+            break;
+        case ast::BuiltInType::BOOL:
+            return "i1";
+            break;
+        case ast::BuiltInType::VOID:
+            return "void";
+            break;
+        default:
+            // huh
+            std::cout << "how did i.... get here" << std::endl;
+            std::cout << "uhhhh can i get uhhhh " << type << std::endl;
+            exit(46);
+            break;
+        }
+    }
+
+    std::string GenCode::allocateFunctionStack()
+    {
+        std::string base_pointer = this->buffer.freshVar();
+        buffer.emit(base_pointer + " = alloca i32, i32 50");
+        return base_pointer;
+    }
 
     void GenCode::genZeroDiv()
     {
@@ -93,15 +125,29 @@ namespace generate
     void GenCode::genID(ast::ID &node)
     {
         symbol_table::SymTableEntry entry = this->stack->isInsideSymolTable_byFallOutBoy(node.value);
-        if (entry != nullEntry)
+        if (entry == nullEntry || entry.isFuck())
         {
-            return;
+            return; // "don't do shit" , Batel, 2025
         }
-        else if (!entry.isFuck())
+        if (CODEDEBUG)
+            std::cout << entry.getNem() << std::endl;
+        if (entry.getOff() < 0)
         {
-            node.reg = entry.getEmittedVarName();
+            // func parameter
+            node.reg = entry.setEmittedName("%" + std::to_string(((-1) * entry.getOff() - 1)));
         }
-        // else - is func - no var needed (we use the function name)
+        else
+        {
+            // local var
+            std::string reg = this->buffer.freshVar();
+            std::string var_ptr = this->buffer.freshVar();
+            std::string rbp = this->stack->getBasePointer();
+            std::string type = getLLVMType(entry.getType());
+
+            this->buffer.emit(var_ptr + " = getelementptr " + type + ", " + type + "* " + rbp + ", i32 " + std::to_string(entry.getOff()));
+            this->buffer.emit(reg + " = load " + type + ", " + type + "* " + var_ptr);
+            node.reg = entry.setEmittedName(reg);
+        }
     }
 
     //%binop_result = op i32 %left_value, %right_value
@@ -220,8 +266,49 @@ namespace generate
 
     void GenCode::genCast(ast::Cast &node)
     {
+        std::string src_type; // Get the source type
+        if (node.type_def.compare("int") == 0)
+        {
+            src_type = "i32";
+        }
+        else if (node.type_def.compare("byte") == 0)
+        {
+            src_type = "i8";
+        }
+        else
+        {
+            // what
+            std::cout << "wheres the door" << std::endl;
+            exit(0);
+        }
+        std::string dest_type = getLLVMType(node.target_type->getType()); // Get the destination type
+        std::string new_reg = this->buffer.freshVar();                    // Get a new register name
+        if (dest_type.compare(src_type) == 0)
+        {
+            // all good no worries
+            return;
+        }
+        if (src_type == "i8" && dest_type == "i32")
+        {
+            // zeroextention from i8 to i32
+            this->buffer.emit(new_reg + " = zext i8 " + node.exp->reg + " to i32");
+        }
+        else if (src_type == "i32" && dest_type == "i8")
+        {
+            // truncate from i32 to i8
+            this->buffer.emit(new_reg + " = trunc i32 " + node.exp->reg + " to i8");
+        }
+        else
+        {
+            // huhh?
+            std::cerr << "shit that wasn't supposed to happen - happened. plz give us 3 bonus points for creativity" << std::endl;
+            exit(3);
+        }
+
+        node.reg = new_reg; // save the result register in the node
     }
 
+    // we don't need ya
     void GenCode::genExpList(ast::ExpList &node)
     {
     }
@@ -241,17 +328,19 @@ namespace generate
             }
             else if ((*it)->type_def.compare("byte") == 0)
             {
-                emitted_args.append("i8* ");
+                emitted_args.append("i8* ").append((*it)->reg);
             }
-            else
+            else // int / bool
             {
-                emitted_args.append("i32 ");
+                emitted_args.append("i32 ").append((*it)->reg);
+               
             }
-            emitted_args.append((*it)->reg);
+            
 
             if (it + 1 != explist.end())
                 emitted_args.append(", "); // we not finished
         }
+        std::cout << emitted_args << std::endl;
 
         if (node.func_id->type_def.compare("void") == 0)
             this->buffer.emit("call void @" + node.func_id->value + "(" + emitted_args + ")");
@@ -264,20 +353,44 @@ namespace generate
         }
     }
 
-    void GenCode::genStatements(ast::Statements &node)
-    {
-    }
+    // fucking useless
+    void GenCode::genStatements(ast::Statements &node) {}
 
     void GenCode::genBreak(ast::Break &node)
     {
+        this->buffer.emit("br label " + getEnd());
     }
 
     void GenCode::genContinue(ast::Continue &node)
     {
+        this->buffer.emit("br label " + getHead());
     }
 
     void GenCode::genReturn(ast::Return &node)
     {
+        if (!node.exp)
+            buffer.emit("ret void");
+        else
+        {
+            std::string return_type;
+            if (node.type_def.compare("string") == 0)
+            {
+                return_type = "i8*";
+            }
+            else if (node.type_def.compare("int") == 0)
+            {
+                return_type = "i32";
+            }
+            else if (node.type_def.compare("byte") == 0)
+            {
+                return_type = "i8";
+            }
+            else if (node.type_def.compare("bool") == 0)
+            {
+                return_type = "i1";
+            }
+            buffer.emit("ret " + return_type + " " + node.exp->reg);
+        }
     }
 
     /*
@@ -294,7 +407,9 @@ namespace generate
      *
      *end:                       ; Label for "end" block
      * ; Instructions after the "if" statement
-     */
+
+    */
+
     void GenCode::genIfCondition(ast::If &node)
     {
         std::string true_lab, false_lab, end_lab;
@@ -333,7 +448,8 @@ namespace generate
     }
 
     /*
-     *br label %loop_header          ; Initial jump to the loop header
+
+    *br label %loop_header          ; Initial jump to the loop header
      *
      *loop_header:                   ; Start of the loop
      *%cond = icmp ...               ; Evaluate the loop condition (result is i1)
@@ -345,54 +461,117 @@ namespace generate
      *
      *exit_block:                    ; Exit block
      * ; Instructions after the loop
-     */
+
+    */
+
     void GenCode::genWhileCondition(ast::While &node)
     {
         std::string loop_head, loop_body, end_lab;
-        // undertale mentioned!??!?!?!?!?!??!?!
         loop_head = this->buffer.freshLabel();
         loop_body = this->buffer.freshLabel();
         end_lab = this->buffer.freshLabel();
-        // we need to make sure this emit something good so llvm wont crash down
+
         this->buffer.emit("br label " + loop_head);
         this->buffer.emitLabel(loop_head);
         node.loop_head = loop_head;
         node.loop_body = loop_body;
         node.end_lab = end_lab;
+
+        setHead(loop_head);
+        setEnd(loop_end);
     }
 
     void GenCode::genWhileBody(ast::While &node)
     {
+        // need to make sure condition is always holding a register
+        std::string loaded_cond = this->buffer.freshVar();
+        std::string cond_type;
+        if (node.type_def.compare("string") == 0)
+        {
+            cond_type = "i8*";
+        }
+        else if (node.type_def.compare("int") == 0)
+        {
+            cond_type = "i32";
+        }
+        else if (node.type_def.compare("byte") == 0)
+        {
+            cond_type = "i8";
+        }
+        else if (node.type_def.compare("bool") == 0)
+        {
+            cond_type = "i1";
+        }
+        
+        this->buffer.emit(loaded_cond + " = load " + cond_type + ", " + cond_type + "* " + node.condition->reg);
+        node.condition->reg = loaded_cond; // Use the loaded value
+
         this->buffer.emit("br i1 " + node.condition->reg + ", label " + node.loop_body + ", label " + node.end_lab + "\n");
         this->buffer.emitLabel(node.loop_body);
     }
 
     void GenCode::genWhileEnd(ast::While &node)
     {
-        this->buffer.emit("\n");
+        this->buffer.emit("br label " + node.loop_head + "\n");
         this->buffer.emitLabel(node.end_lab);
     }
 
     void GenCode::genVarDecl(ast::VarDecl &node)
     {
+        // assuming syntax is valid (in us we trust)
+        symbol_table::SymTableEntry entry = this->stack->isInsideSymolTable_byFallOutBoy(node.id->getVal());
+        std::string var_reg = entry.setEmittedName(this->buffer.freshVar());
+        // Allocate space for the variable on the stack
+        std::string type_in_llvm = getLLVMType(node.type->getType());
+
+        this->buffer.emit(var_reg + " = alloca " + type_in_llvm);
     }
 
     void GenCode::genAssign(ast::Assign &node)
     {
+        // feeling like genAssign? Try genOside
+        symbol_table::SymTableEntry entry = this->stack->isInsideSymolTable_byFallOutBoy(node.id->getVal());
+        std::string var_reg = entry.getEmittedVarName();
+        std::string type_in_llvm = getLLVMType(entry.getType());
+        // Emit store instruction to update the variable
+        this->buffer.emit("store " + type_in_llvm + " " + node.exp->reg + ", " + type_in_llvm + "* " + var_reg);
     }
 
+    // useless
     void GenCode::genFormal(ast::Formal &node)
     {
     }
 
     void GenCode::genFormals(ast::Formals &node)
     {
+        /*
+        a b c d e f g
+        what the fuck is wrong with me
+        i cant sleep
+        i cant eat
+        found one bug and lost my shit
+        */
     }
 
-    void GenCode::genFuncDecl(ast::FuncDecl &node)
+    void GenCode::genFuncDeclEntery(ast::FuncDecl &node)
     {
+        // need ret either way. two rets never killed anyone
+        // honestly if its such a big deal the optimizor bitch will handle it
+        // fucking allocate the base stack
+        std::string func_ret_type = getLLVMType(node.getType());
+        this->buffer.emit("define " + func_ret_type + " @" + node.getID() + "{");
+        this->stack->setBasePointer(allocateFunctionStack());
     }
 
+    void GenCode::genFuncDeclClosery(ast::FuncDecl &node)
+    {
+        // in case the function is a void but the user have abstained from adding a 'return;' we will do it
+        // this way the block will be well defined and we might actually pass this fucking assigment
+        if (node.getType() == ast::BuiltInType::VOID)
+            this->buffer.emit("ret void\n}");
+    }
+
+    // another useless bitch
     void GenCode::genFuncs(ast::Funcs &node)
     {
     }

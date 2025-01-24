@@ -15,36 +15,27 @@ namespace symbol_table
     private:
         std::string m_name;
         ast::BuiltInType m_type; // if fuck then two other parameters can be used
-        std::string m_var_emitted_name_by_falloutboy;
+        std::string m_var_emitted_name_by_falloutboy = "";
         int m_offset;
 
         // for function onlyyyyyy
         ast::BuiltInType m_ret_type;
         std::vector<ast::BuiltInType> m_formalTypes;
-        std::string m_var_emitted_label_by_falloutboy;
 
     public:
         // hey just fyi, if your rettype is FUCK then your are in fact NOT a func, and do not have a rettype at all
         // this is not confusing, don't worry about it
         SymTableEntry(string name, ast::BuiltInType type, int offset, ast::BuiltInType ret_type = ast::BuiltInType::FUCK, std::vector<ast::BuiltInType> formalTypes = std::vector<ast::BuiltInType>()) : m_name(name), m_type(type), m_offset(offset), m_ret_type(ret_type),m_formalTypes(formalTypes) {}
         
-        void setEmittedName(std::string n)
+        std::string setEmittedName(std::string reg)
         {
-            this->m_var_emitted_name_by_falloutboy = n;
-        }
-        void setEmmitedLabalush(std::string nn)
-        {
-            this->m_var_emitted_label_by_falloutboy = nn;
-            // thats it
+            this->m_var_emitted_name_by_falloutboy = reg;
+            return reg;
         }
 
         std::string getEmittedVarName()
         {
             return this->m_var_emitted_name_by_falloutboy;
-        }
-        std::string getEmittedLabel()
-        {
-            return this->m_var_emitted_label_by_falloutboy;
         }
         
         ~SymTableEntry() = default;

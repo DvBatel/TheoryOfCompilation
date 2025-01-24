@@ -37,7 +37,8 @@ symbol_table::SymTableEntry stack::Stack::isInsideSymolTable_byFallOutBoy(string
 {
     for (auto it = m_table.begin(); it != m_table.end(); it++)
     {
-        for (auto it_e = (*it).GetDaBaby().begin(); it_e != (*it).GetDaBaby().end(); it_e++)
+        std::vector<symbol_table::SymTableEntry> bebe = (*it).GetDaBaby();
+        for (auto it_e = bebe.begin(); it_e != bebe.end(); it_e++)
         {
             if ((*it_e).getNem().compare(name) == 0)
             {
@@ -56,4 +57,14 @@ int stack::Stack::getLatestOffset()
 bool stack::Stack::checkIfMain(const std::string &id, const ast::BuiltInType &returnType, const std::vector<ast::BuiltInType> &paramTypes)
 {
     return symbol_table::SymTableEntry(id, ast::BuiltInType::FUCK, 0, returnType, paramTypes) == mainEntry;
+}
+
+void stack::Stack::setBasePointer(std::string rbp)
+{
+    this->m_base_pointer = rbp;
+}
+
+std::string stack::Stack::getBasePointer()
+{
+    return this->m_base_pointer;
 }

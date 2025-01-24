@@ -8,7 +8,6 @@
 #include "nodes.hpp"
 #include "stack.hpp"
 #include "symbolTable.hpp"
-//#include <optional>
 #include "generate.hpp"
 
 namespace output {
@@ -74,7 +73,7 @@ namespace output {
         //output::ScopePrinter printer;               // printer for semantic
         
         stack::Stack stack;
-        generate::GenCode code = generate::GenCode(&this->stack); // printer for llvm
+        generate::GenCode code; // printer for llvm
 
         int inLoop = 0;
 

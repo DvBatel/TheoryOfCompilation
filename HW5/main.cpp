@@ -10,7 +10,6 @@ extern std::shared_ptr<ast::Node> program;
 int main() {
     // Parse the input. The result is stored in the global variable `program`
     yyparse();
-
     // in memory ♥
     // Print the AST using the PrintVisitor
     output::PrintVisitor printVisitor;

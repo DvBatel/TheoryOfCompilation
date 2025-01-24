@@ -366,6 +366,8 @@ namespace ast
     class Break : public Statement
     {
     public:
+        
+
         void accept(Visitor &visitor) override
         {
             visitor.visit(*this);

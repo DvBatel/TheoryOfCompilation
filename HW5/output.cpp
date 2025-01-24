@@ -9,7 +9,6 @@ namespace output
 {
     const int MAX_BYTE = 255;
     int FORMAL = 1;
-    int NO_VALUE_DURING_COMPILATION = 0;
     const int DEBUG = 0;
     /* Helper functions */
 
@@ -182,12 +181,13 @@ namespace output
 
     /* PrintVisitor implementation */
 
-    PrintVisitor::PrintVisitor() /*: printer()*/
+    PrintVisitor::PrintVisitor() : code()
     {
         if (DEBUG)
             cout << "entered initializer" << endl;
         // emit library functions
         this->stack.newScope();
+        code.setStack(&this->stack);
         // this->printer.emitFunc("print", ast::BuiltInType::VOID, {ast::BuiltInType::STRING});
         // this->printer.emitFunc("printi", ast::BuiltInType::VOID, {ast::BuiltInType::INT});
         this->stack.newSymbol("print", ast::BuiltInType::FUCK, ast::BuiltInType::VOID, std::vector<ast::BuiltInType>(1, ast::BuiltInType::STRING));
@@ -228,6 +228,7 @@ namespace output
         if (DEBUG)                          /*%%%*/
             cout << "entered bool" << endl; /*%%%*/
         node.type_def = toString(ast::BuiltInType::BOOL);
+        this->code.genBool(node);
     }
 
     void PrintVisitor::visit(ast::ID &node)
@@ -237,6 +238,8 @@ namespace output
             std::cout << "entered id" << endl; /*%%%*/
         node.type_def = node.value;
         this->code.genID(node);
+        /*%%%*/ if (DEBUG)
+            std::cout << "out of id" << endl; /*%%%*/
     }
 
     void PrintVisitor::assureNumber(ast::Exp &node)
@@ -321,6 +324,7 @@ namespace output
         }
         assureNumber(*(node.exp));
         node.type_def = node.target_type->type_def;
+        this->code.genCast(node);
     }
 
     void PrintVisitor::assureBoolean(ast::Exp &node1, ast::Exp &node2)
@@ -536,6 +540,7 @@ namespace output
         {
             errorUnexpectedBreak(node.line);
         }
+        this->code.genBreak(node);
     }
 
     void PrintVisitor::visit(ast::Continue &node)
@@ -546,6 +551,7 @@ namespace output
         {
             errorUnexpectedContinue(node.line);
         }
+        this->code.genContinue(node);
     }
 
     void PrintVisitor::visit(ast::Return &node)
@@ -579,6 +585,7 @@ namespace output
         {
             node.type_def = toString(ast::BuiltInType::VOID);
         }
+        this->code.genReturn(node);
     }
 
     bool PrintVisitor::isBoolean(ast::Exp &condition)
@@ -736,8 +743,10 @@ namespace output
             assureAssignCorrect(node.init_exp, node.type->getType());
         }
         this->stack.newSymbol(node.id->getVal(), node.type->getType());
+        this->code.genID(*node.id);
         // the latest offset is the offset added to the symboltable
         // this->printer.emitVar(node.id->getVal(), node.type->getType(), this->stack.getLatestOffset());
+        this->code.genVarDecl(node);
     }
 
     void PrintVisitor::visit(ast::Assign &node)
@@ -758,8 +767,8 @@ namespace output
             // this is fuck
             errorDefAsFunc(node.id->line, node.id->getVal());
         }
-
         assureAssignCorrect(node.exp, entry.getType());
+        this->code.genAssign(node);
     }
 
     void PrintVisitor::visit(ast::Formal &node)
@@ -792,6 +801,8 @@ namespace output
 
         node.id->accept(*this);
         node.return_type->accept(*this);
+        this->code.genFuncDeclEntery(node);
+
         node.formals->accept(*this);
         node.body->accept(*this);
 
@@ -817,6 +828,7 @@ namespace output
                 }
             }
         }
+        this->code.genFuncDeclClosery(node);
     }
 
     void PrintVisitor::visit(ast::Funcs &node)

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iostream> //for testing
 #include "nodes.hpp"
 #include "stack.hpp"
 #include "symbolTable.hpp"
@@ -74,12 +75,27 @@ namespace generate
     {
     private:
         generate::CodeBuffer buffer;
-        stack::Stack* stack;
+        stack::Stack *stack;
+
+        std::string loop_head = "";
+        std::string loop_end = "";
 
     public:
-        GenCode(stack::Stack* stack) : stack(stack){}
+        GenCode() : buffer() { }
 
         ~GenCode() {}
+
+        void setStack(stack::Stack *stack) { this->stack = stack; }
+
+        void setHead(std::string head) { this->loop_head = head; }
+
+        void setEnd(std::string end) { this->loop_end = end; }
+
+        std::string getHead() { return this->loop_head; }
+
+        std::string getEnd() { return this->loop_end; }
+
+        std::string allocateFunctionStack();
 
         void genZeroDiv();
 
@@ -139,7 +155,9 @@ namespace generate
 
         void genFormals(ast::Formals &node);
 
-        void genFuncDecl(ast::FuncDecl &node);
+        void genFuncDeclEntery(ast::FuncDecl &node);
+
+        void genFuncDeclClosery(ast::FuncDecl &node);
 
         void genFuncs(ast::Funcs &node);
 
