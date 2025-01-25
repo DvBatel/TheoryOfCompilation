@@ -516,7 +516,7 @@ namespace output
                     {
                         errorDef((*it)->id->line, (*it)->id->getVal());
                     }
-                    this->stack.newSymbol((*it)->id->value, (*it)->type->type, ast::BuiltInType::FUCK, std::vector<ast::BuiltInType>(), FORMAL);
+                    this->stack.newFormal((*it)->id->value, (*it)->type->type, ast::BuiltInType::FUCK, std::vector<ast::BuiltInType>(), offsetGeorge--);
                     // this->printer.emitVar((*it)->id->value, (*it)->type->type, offsetGeorge--);
                 }
             }
@@ -641,9 +641,9 @@ namespace output
         if (DEBUG)                           /*%%%*/
             cout << "entered while" << endl; /*%%%*/
 
+        this->code.genWhileCondition(node);
         node.condition->accept(*this);
         assureBoolean(*(node.condition), *(node.condition));
-        this->code.genWhileCondition(node);
 
         this->inLoop++;
         // this->printer.beginScope();
@@ -743,7 +743,6 @@ namespace output
             assureAssignCorrect(node.init_exp, node.type->getType());
         }
         this->stack.newSymbol(node.id->getVal(), node.type->getType());
-        this->code.genID(*node.id);
         // the latest offset is the offset added to the symboltable
         // this->printer.emitVar(node.id->getVal(), node.type->getType(), this->stack.getLatestOffset());
         this->code.genVarDecl(node);
@@ -795,10 +794,9 @@ namespace output
     {
         if (DEBUG)                              /*%%%*/
             cout << "entered funcdecl" << endl; /*%%%*/
-
+    
         std::vector<std::shared_ptr<ast::Formal>> formalsToBeAdded = node.getFormals();
         // check if the formal's names suits a function name
-
         node.id->accept(*this);
         node.return_type->accept(*this);
         this->code.genFuncDeclEntery(node);
@@ -835,6 +833,7 @@ namespace output
     {
         if (DEBUG)                           /*%%%*/
             cout << "entered funcs" << endl; /*%%%*/
+        this->code.genFuncs(node);
 
         bool isThereMain = false;
         for (auto it = node.funcs.begin(); it != node.funcs.end(); ++it)

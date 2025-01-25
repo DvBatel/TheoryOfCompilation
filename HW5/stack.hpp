@@ -28,12 +28,16 @@ namespace stack
 
         void newSymbol(string name, ast::BuiltInType type, ast::BuiltInType ret_type = ast::BuiltInType::FUCK, std::vector<ast::BuiltInType> formalTypes = std::vector<ast::BuiltInType>(), bool isFormal = 0);
 
+        void newFormal(string name, ast::BuiltInType type, ast::BuiltInType ret_type = ast::BuiltInType::FUCK, std::vector<ast::BuiltInType> formalTypes = std::vector<ast::BuiltInType>(), int offset = -1);
+
         void newScope();
 
         void popScope();
 
         symbol_table::SymTableEntry isInsideSymolTable_byFallOutBoy(string name);
 
+        void setEmmited(string name, string reg);
+        
         symbol_table::SymTable Head()
         {
             return this->m_table.front();

@@ -33,7 +33,7 @@ namespace symbol_table
             return reg;
         }
 
-        std::string getEmittedVarName()
+        std::string getEmittedName()
         {
             return this->m_var_emitted_name_by_falloutboy;
         }

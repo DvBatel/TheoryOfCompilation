@@ -29,6 +29,7 @@ namespace ast {
     class FuncDecl;
     class Funcs;
 }
+// thank you for coming to my ted talk
 
 class Visitor {
 public:

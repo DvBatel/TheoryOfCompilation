@@ -9,6 +9,7 @@
 #include "stack.hpp"
 #include "symbolTable.hpp"
 
+
 namespace generate
 {
     /* CodeBuffer class
@@ -54,6 +55,10 @@ namespace generate
         // Emits a string into the buffer
         void emit(const std::string &str);
 
+        void declare_externs();
+
+        void define_prints();
+
         // Template overload for general types
         template <typename T>
         CodeBuffer &operator<<(const T &value)
@@ -64,6 +69,7 @@ namespace generate
 
         // Overload for manipulators (like std::endl)
         CodeBuffer &operator<<(std::ostream &(*manip)(std::ostream &));
+
     };
 
     std::ostream &operator<<(std::ostream &os, const CodeBuffer &buffer);
@@ -97,6 +103,10 @@ namespace generate
 
         std::string allocateFunctionStack();
 
+        std::string generateLoadVar(string rbp, int offset  , string type);
+
+        void generateStoreVar(string rbp, int offset, string reg, string type);
+        
         void genZeroDiv();
 
         void genNum(ast::Num &node);
