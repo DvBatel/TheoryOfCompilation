@@ -184,12 +184,12 @@ void main ()
 test 9____ expected: two 'good's
 bool retfalse()
 {
-    print("wrong)";
+    print("wrong");
     return false;
 }
 bool rettrue()
 {
-    print("wrong)";
+    print("wrong");
     return true;
 }
 
