@@ -218,6 +218,14 @@ namespace ast
         // Right operand
         std::shared_ptr<Exp> right;
 
+        // llvm
+
+        std::string false_lab = "";
+
+        std::string true_lab = "";
+        
+        std::string end_lab = "";
+
         // Constructor that receives the left and right operands
         And(std::shared_ptr<Exp> left, std::shared_ptr<Exp> right);
 
@@ -235,6 +243,14 @@ namespace ast
         std::shared_ptr<Exp> left;
         // Right operand
         std::shared_ptr<Exp> right;
+
+        // llvm
+
+        std::string false_lab = "";
+
+        std::string true_lab = "";
+        
+        std::string end_lab = "";
 
         // Constructor that receives the left and right operands
         Or(std::shared_ptr<Exp> left, std::shared_ptr<Exp> right);

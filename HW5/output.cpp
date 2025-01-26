@@ -397,12 +397,14 @@ namespace output
         if (DEBUG)                         /*%%%*/
             cout << "entered and" << endl; /*%%%*/
         node.left->accept(*this);
+        this->code.genAndLeft(node);
+
         node.right->accept(*this);
+        this->code.genAndRight(node);
 
         assureBoolean(*(node.left), *(node.right));
 
         node.type_def = toString(ast::BuiltInType::BOOL);
-        this->code.genAnd(node);
     }
 
     void PrintVisitor::visit(ast::Or &node)
@@ -410,12 +412,14 @@ namespace output
         if (DEBUG)                        /*%%%*/
             cout << "entered or" << endl; /*%%%*/
         node.left->accept(*this);
+        this->code.genOrLeft(node);
+
         node.right->accept(*this);
+        this->code.genOrRight(node);
 
         assureBoolean(*(node.left), *(node.right));
 
         node.type_def = toString(ast::BuiltInType::BOOL);
-        this->code.genOr(node);
     }
 
     void PrintVisitor::visit(ast::ExpList &node)

@@ -125,9 +125,13 @@ namespace generate
 
         void genNot(ast::Not &node);
 
-        void genAnd(ast::And &node);
+        void genAndLeft(ast::And &node);
 
-        void genOr(ast::Or &node);
+        void genAndRight(ast::And &node);
+
+        void genOrLeft(ast::Or &node);
+
+        void genOrRight(ast::Or &node);
 
         void genType(ast::Type &node);
 

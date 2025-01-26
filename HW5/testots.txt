@@ -41,7 +41,7 @@ byte foo()
 void main ()
 {
     int pippo = 0;
-    foonum = foo();
+    byte foonum = foo();
     while(pippo < foonum )
     {
         print("Hello world");
@@ -55,7 +55,7 @@ void main()
 {
     int a = 1;
     int b = 2;
-    inc c = 3;
+    int c = 3;
     int d = 4;
     int e = a;
     int f = c;
@@ -64,11 +64,11 @@ void main()
     a = c;
     if (a == f and e == f)
     {
-        print("good");
+        print("bad");
     }
     else
     {
-        print("bad");
+        print("good");
     }
     e = b;
 
@@ -100,7 +100,7 @@ void main()
 
 }
 
-test 6 ___ expected: 6 times ~ then 5 and 5
+// test 6 ___ expected: 5 times ~ then 2 times 5
 void main()
 {
     int i = 0;
@@ -117,7 +117,7 @@ void main()
 }
 
 
-test 7 ___ expected : 5
+// test 7 ___ expected : 5
 byte getfive()
 {
     return 5b;
@@ -129,7 +129,7 @@ void main()
 }
 
 
-test 7___  prints 0
+// test 8___  prints 0
 void fuckme(int x, int y)
 {
     int t = x * y;
@@ -160,11 +160,11 @@ void main()
     printi(0);
 }
 
-test 8 ____ expected: 2 (and not crush obviously)
+// test 9 ____ expected: 2 (and not crush obviously)
 void main ()
 {
     int x = 2;
-    if(5== 0)
+    if(5 == 0)
     {
         x = 3;
     }
@@ -181,7 +181,7 @@ void main ()
 }
 
 
-test 9____ expected: two 'good's
+// test 10____ expected: two 'good's
 bool retfalse()
 {
     print("wrong");
@@ -207,3 +207,132 @@ void main ()
     print("good");
 }
 
+
+test 10.5 ___ special thanks to my blood sworn brother and loyar partner in everything
+void main() 
+{
+    int i = 0;
+    int sum = 0;
+
+    while (i < 3) 
+    {
+        int j = 0;
+        while (j < 3) 
+        {
+            if (i == j) 
+            {
+                sum = sum + 1;
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+    printi(sum); // Expected: 3 (incremented when i == j)
+}
+
+
+// test 11 ____ casting and shit
+byte intify(int b)
+{
+    print("gimmie gimmie now");
+    return ((byte)b);
+}
+
+void main ()
+{
+    byte x = intify(12);
+    int a = 8b;
+    byte y = intify(a);
+    print("zuzuzuzuzu");
+    if((byte)(3b + 2b) < x * y)
+    {
+        print("Ijen naega neoreul jaba now, imma savage");
+    }
+}
+
+// test 12 ____
+int plusser (int a , int b, int c, byte d)
+{
+    int y = 9 + a + b + c + d + a + b+ c + d;
+    return y;
+}
+void main()
+{
+    if(plusser(1,1,1,1b) == 17)
+    {
+        print("good");
+    }
+    if(plusser(2,2,2,0b) + plusser(0,1,0,1b) == 21 + 13)
+    {
+        print("very good");
+    }
+    print("fail, im sorry");
+}
+
+
+// test 13 ____ nuh uh
+bool truther(int a , byte b)
+{
+    return true;
+}
+bool falsesr(int t)
+{
+    return t <= 5;
+}
+bool oppo (bool i)
+{
+    return not i;
+}
+void main()
+{
+    if(truther(5,4b) and not falsesr(6))
+    {
+        print("bow chica bow wow");
+    }
+    else
+    {
+        print("dishonor");
+    }
+    int x = 1;
+    if(not (5 == 7) and 3 > 0)
+    {
+        print("thats what my baby said");
+        x = 6;
+    }
+    if(oppo(false))
+    {
+        print("mow mow mow");
+    }
+    if(x == 6)
+        print("and my heart starts bumping");
+}
+
+
+
+//    test 14 - break and constant
+void main() {
+    int i = 0;
+    while ( i < 10 ) {
+        if (i < 2) {
+            printi(i);
+            break;
+        }
+        i = i + 1;
+    }
+}
+
+
+// test 15 ___ checks for inexplicit casting byte to int. expected : 0 \n 0 \n 2
+int notprinti (int t)
+{
+    return 2;
+}
+void main()
+{
+    byte b = 255b;
+    int x = b + 1b;
+    printi(x);
+    byte g = b + 1b;
+    printi(g);
+    printi(notprinti(4b));
+}
