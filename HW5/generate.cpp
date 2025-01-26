@@ -540,7 +540,30 @@ namespace generate
             }
             else if ((*it)->type_def.compare("bool") == 0)
             {
-                emitted_args.append("i1 ").append((*it)->reg);
+                if ((*formal) == ast::BuiltInType::INT)
+                {
+                    /*
+                        std::string casted = buffer.freshVar();
+                        buffer.emit(casted + " = zext i8 " + init_val + " to i32");
+                    */
+                    std::string casted = buffer.freshVar();
+                    buffer.emit(casted + " = zext i1 " + (*it)->reg + " to i32");
+                    emitted_args.append("i32 ").append(casted);
+                }
+                else if ((*formal) == ast::BuiltInType::BYTE)
+                {
+                    /*
+                        std::string casted = buffer.freshVar();
+                        buffer.emit(casted + " = zext i8 " + init_val + " to i32");
+                    */
+                    std::string casted = buffer.freshVar();
+                    buffer.emit(casted + " = zext i1 " + (*it)->reg + " to i8");
+                    emitted_args.append("i8 ").append(casted);
+                }
+                else
+                {
+                    emitted_args.append("i1 ").append((*it)->reg);
+                }
             }
             else // int
             {
