@@ -10,6 +10,13 @@ namespace output
     const int MAX_BYTE = 255;
     int FORMAL = 1;
     const int DEBUG = 0;
+    void debugprint2(std::string a)
+    {
+        if (DEBUG)
+        {
+            std::cout << ";" << " -- debug output -- " << a << std::endl;
+        }
+    }
     /* Helper functions */
 
     static std::string toString(ast::BuiltInType type)
@@ -183,8 +190,7 @@ namespace output
 
     PrintVisitor::PrintVisitor() : code()
     {
-        if (DEBUG)
-            cout << "entered initializer" << endl;
+        debugprint2("entered initializer");
         // emit library functions
         this->stack.newScope();
         code.setStack(&this->stack);
@@ -196,37 +202,32 @@ namespace output
 
     void PrintVisitor::visit(ast::Num &node)
     {
-        if (DEBUG)                         /*%%%*/
-            cout << "entered int" << endl; /*%%%*/
+        debugprint2("entered int");
         this->code.genNum(node);
-        node.type_def   = toString(ast::BuiltInType::INT);
+        node.type_def = toString(ast::BuiltInType::INT);
     }
 
     void PrintVisitor::visit(ast::NumB &node)
     {
-        if (DEBUG)                          /*%%%*/
-            cout << "entered numb" << endl; /*%%%*/
-        
+        debugprint2("entered numb");
         if (node.value > MAX_BYTE)
         {
             errorByteTooLarge(node.line, node.value);
         }
         this->code.genNumB(node);
-        node.type_def   = toString(ast::BuiltInType::BYTE);
+        node.type_def = toString(ast::BuiltInType::BYTE);
     }
 
     void PrintVisitor::visit(ast::String &node)
     {
-        if (DEBUG)                            /*%%%*/
-            cout << "entered string" << endl; /*%%%*/
+        debugprint2("entered string");
         this->code.genString(node);
         node.type_def = toString(ast::BuiltInType::STRING);
     }
 
     void PrintVisitor::visit(ast::Bool &node)
     {
-        if (DEBUG)                          /*%%%*/
-            cout << "entered bool" << endl; /*%%%*/
+        debugprint2("entered bool");
         node.type_def = toString(ast::BuiltInType::BOOL);
         this->code.genBool(node);
     }
@@ -234,12 +235,10 @@ namespace output
     void PrintVisitor::visit(ast::ID &node)
     {
         // im in
-        /*%%%*/ if (DEBUG)
-            std::cout << "entered id" << endl; /*%%%*/
+        debugprint2("entered id");
         node.type_def = node.value;
         this->code.genID(node);
-        /*%%%*/ if (DEBUG)
-            std::cout << "out of id" << endl; /*%%%*/
+        debugprint2("out of id");
     }
 
     void PrintVisitor::assureNumber(ast::Exp &node)
@@ -271,9 +270,7 @@ namespace output
 
     void PrintVisitor::visit(ast::BinOp &node)
     {
-        if (DEBUG)                           /*%%%*/
-            cout << "entered binop" << endl; /*%%%*/
-
+        debugprint2("entered binop");
         // go inside recursively and return the values
         node.left->accept(*this);
         node.right->accept(*this);
@@ -289,33 +286,29 @@ namespace output
 
     void PrintVisitor::visit(ast::RelOp &node)
     {
-        if (DEBUG)                           /*%%%*/
-            cout << "entered relop" << endl; /*%%%*/
-
+        debugprint2("entered relop");
         // go inside recursively and return the values
         node.left->accept(*this);
         node.right->accept(*this);
 
         assureNumber(*(node.left));
         assureNumber(*(node.right));
-        
+
         node.type_def = toString(ast::BuiltInType::BOOL);
         this->code.genRelOp(node);
     }
 
     void PrintVisitor::visit(ast::Type &node)
     {
-        if (DEBUG)                          /*%%%*/
-            cout << "entered type" << endl; /*%%%*/
+        debugprint2("entered type");
         node.type_def = toString(node.getType());
     }
 
     void PrintVisitor::visit(ast::Cast &node)
     {
-        if (DEBUG)                          /*%%%*/
-            cout << "entered cast" << endl; /*%%%*/
-        node.target_type->accept(*this);    // the explicit cast type
-        node.exp->accept(*this);            // the current value
+        debugprint2("entered cast");
+        node.target_type->accept(*this); // the explicit cast type
+        node.exp->accept(*this);         // the current value
 
         if (node.target_type->getType() != ast::BuiltInType::INT &&
             node.target_type->getType() != ast::BuiltInType::BYTE)
@@ -382,8 +375,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Not &node)
     {
-        if (DEBUG)                         /*%%%*/
-            cout << "entered not" << endl; /*%%%*/
+        debugprint2("entered not");
         node.exp->accept(*this);
 
         assureBoolean(*(node.exp), *(node.exp));
@@ -394,8 +386,7 @@ namespace output
 
     void PrintVisitor::visit(ast::And &node)
     {
-        if (DEBUG)                         /*%%%*/
-            cout << "entered and" << endl; /*%%%*/
+        debugprint2("entered and");
         node.left->accept(*this);
         this->code.genAndLeft(node);
 
@@ -409,8 +400,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Or &node)
     {
-        if (DEBUG)                        /*%%%*/
-            cout << "entered or" << endl; /*%%%*/
+        debugprint2("entered or");
         node.left->accept(*this);
         this->code.genOrLeft(node);
 
@@ -424,9 +414,7 @@ namespace output
 
     void PrintVisitor::visit(ast::ExpList &node)
     {
-        if (DEBUG)                             /*%%%*/
-            cout << "entered explist" << endl; /*%%%*/
-
+        debugprint2("entered explist");
         for (auto it = node.exps.rbegin(); it != node.exps.rend(); ++it)
         {
             (*it)->accept(*this);
@@ -435,9 +423,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Call &node)
     {
-        if (DEBUG)                          /*%%%*/
-            cout << "entered call" << endl; /*%%%*/
-
+        debugprint2("entered call");
         node.func_id->accept(*this);
         node.args->accept(*this);
 
@@ -503,8 +489,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Statements &node)
     {
-        if (DEBUG)                                /*%%%*/
-            cout << "entered statements" << endl; /*%%%*/
+        debugprint2("entered statements");
         if (node.isInBraces)
         {
             // this->printer.beginScope();
@@ -538,8 +523,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Break &node)
     {
-        if (DEBUG)                           /*%%%*/
-            cout << "entered break" << endl; /*%%%*/
+        debugprint2("entered break");
         if (inLoop <= 0)
         {
             errorUnexpectedBreak(node.line);
@@ -549,8 +533,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Continue &node)
     {
-        if (DEBUG)                              /*%%%*/
-            cout << "entered continue" << endl; /*%%%*/
+        debugprint2("entered continue");
         if (inLoop <= 0)
         {
             errorUnexpectedContinue(node.line);
@@ -560,9 +543,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Return &node)
     {
-        if (DEBUG)                            /*%%%*/
-            cout << "entered return" << endl; /*%%%*/
-
+        debugprint2("entered return");
         if (node.exp)
         {
             node.exp->accept(*this);
@@ -619,9 +600,7 @@ namespace output
 
     void PrintVisitor::visit(ast::If &node)
     {
-        if (DEBUG)                        /*%%%*/
-            cout << "entered if" << endl; /*%%%*/
-
+        debugprint2("entered if");
         node.condition->accept(*this);
         assureBoolean(*(node.condition), *(node.condition));
         this->code.genIfCondition(node);
@@ -642,9 +621,7 @@ namespace output
 
     void PrintVisitor::visit(ast::While &node)
     {
-        if (DEBUG)                           /*%%%*/
-            cout << "entered while" << endl; /*%%%*/
-
+        debugprint2("entered while");
         this->code.genWhileCondition(node);
         node.condition->accept(*this);
         assureBoolean(*(node.condition), *(node.condition));
@@ -724,9 +701,7 @@ namespace output
 
     void PrintVisitor::visit(ast::VarDecl &node)
     {
-        if (DEBUG)                             /*%%%*/
-            cout << "entered vardecl" << endl; /*%%%*/
-
+        debugprint2("entered vardecl");
         node.id->accept(*this);
         node.type->accept(*this);
         bool initexpExists = false;
@@ -754,9 +729,7 @@ namespace output
 
     void PrintVisitor::visit(ast::Assign &node)
     {
-        if (DEBUG)                            /*%%%*/
-            cout << "entered assign" << endl; /*%%%*/
-
+        debugprint2("entered assign");
         node.id->accept(*this);
         node.exp->accept(*this);
 
@@ -776,18 +749,14 @@ namespace output
 
     void PrintVisitor::visit(ast::Formal &node)
     {
-        if (DEBUG)                            /*%%%*/
-            cout << "entered formal" << endl; /*%%%*/
-
+        debugprint2("entered formal");
         node.id->accept(*this);
         node.type->accept(*this);
     }
 
     void PrintVisitor::visit(ast::Formals &node)
     {
-        if (DEBUG)                             /*%%%*/
-            cout << "entered formals" << endl; /*%%%*/
-
+        debugprint2("entered formals");
         for (auto it = node.formals.rbegin(); it != node.formals.rend(); ++it)
         {
             (*it)->accept(*this);
@@ -796,9 +765,7 @@ namespace output
 
     void PrintVisitor::visit(ast::FuncDecl &node)
     {
-        if (DEBUG)                              /*%%%*/
-            cout << "entered funcdecl" << endl; /*%%%*/
-    
+        debugprint2("entered funcdecl");
         std::vector<std::shared_ptr<ast::Formal>> formalsToBeAdded = node.getFormals();
         // check if the formal's names suits a function name
         node.id->accept(*this);
@@ -835,9 +802,8 @@ namespace output
 
     void PrintVisitor::visit(ast::Funcs &node)
     {
-        if (DEBUG)                           /*%%%*/
-            cout << "entered funcs" << endl; /*%%%*/
-        this->code.genFuncs(node);
+        debugprint2("entered funcs");
+        this->code.genFuncs(node); // does not gen the actual funcs this is like div by zero print and generic shit
 
         bool isThereMain = false;
         for (auto it = node.funcs.begin(); it != node.funcs.end(); ++it)

@@ -2,11 +2,11 @@
 
 // debugging print func
 const int DEBUG = 1;
-void debugprint(std::string a)
+void debugprint(string a)
 {
     if (DEBUG)
     {
-        std::cout << ";" << " -- debug -- " << a << std::endl;
+        std::cout << ";" << " -- debug generate -- " << a << std::endl;
     }
 }
 
@@ -16,28 +16,28 @@ namespace generate
 
     CodeBuffer::CodeBuffer() : labelCount(0), varCount(0), stringCount(0) {}
 
-    std::string CodeBuffer::freshLabel()
+    string CodeBuffer::freshLabel()
     {
         return "%label_" + std::to_string(labelCount++);
     }
-    std::string CodeBuffer::freshVar()
+    string CodeBuffer::freshVar()
     {
         return "%t" + std::to_string(varCount++);
     }
 
-    std::string CodeBuffer::emitString(const std::string &str)
+    string CodeBuffer::emitString(const string &str)
     {
-        std::string var = "@.str" + std::to_string(stringCount++);
+        string var = "@.str" + std::to_string(stringCount++);
         globalsBuffer << var << " = constant [" << str.length() + 1 << " x i8] c\"" << str << "\\00\"";
         return var;
     }
 
-    void CodeBuffer::emit(const std::string &str)
+    void CodeBuffer::emit(const string &str)
     {
         buffer << str << std::endl;
     }
 
-    void CodeBuffer::emitLabel(const std::string &label)
+    void CodeBuffer::emitLabel(const string &label)
     {
         buffer << label.substr(1) << ":" << std::endl;
     }
@@ -93,7 +93,7 @@ namespace generate
 
     /* GenCode class */
 
-    std::string getLLVMType(ast::BuiltInType type)
+    string getLLVMType(ast::BuiltInType type)
     {
         switch (type)
         {
@@ -111,17 +111,17 @@ namespace generate
             break;
         default:
             // huh
-            std::cout << "how did i.... get here" << std::endl;
-            std::cout << "uhhhh can i get uhhhh " << type << " please?" << std::endl;
+            debugprint("how did i.... get here");
+            debugprint("uhhhh can i get uhhhh " + to_string(type) + " please?");
             exit(46);
             break;
         }
     }
 
-    std::string GenCode::generateLoadVar(string rbp, int offset, string type)
+    string GenCode::generateLoadVar(string rbp, int offset, string type)
     {
-        std::string reg = this->buffer.freshVar();
-        std::string var_ptr = this->buffer.freshVar();
+        string reg = this->buffer.freshVar();
+        string var_ptr = this->buffer.freshVar();
         buffer.emit(var_ptr + " = getelementptr i32, i32* " + rbp + ", i32 " + std::to_string(offset));
         buffer.emit(reg + " = load i32, i32* " + var_ptr);
         return reg;
@@ -133,7 +133,7 @@ namespace generate
         buffer.emit(var_ptr + " = getelementptr i32, i32* " + rbp + ", i32 " + std::to_string(offset));
         // if type is non stackable, we must zest like a lemon
         // %t5_ext = zext i8 %t5 to i32
-        std::string lemon = reg;
+        string lemon = reg;
         if (type.compare("i8") == 0)
         {
             lemon = buffer.freshVar();
@@ -148,10 +148,10 @@ namespace generate
         buffer.emit("store i32 " + lemon + ", i32* " + var_ptr);
     }
 
-    std::string GenCode::allocateFunctionStack()
+    string GenCode::allocateFunctionStack()
     {
-        std::string base_pointer = this->buffer.freshVar();
-        buffer.emit(base_pointer + " = alloca i32, i32 50");
+        string base_pointer = this->buffer.freshVar();
+        buffer.emit(base_pointer + " = alloca i32, i32 75");
         return base_pointer;
     }
 
@@ -201,28 +201,20 @@ namespace generate
         {
             return; // "don't do shit" , Batel, 2025
         }
-        else if (entry.getOff() < 0) // if it's a func paramenter that has not been assigned yet, we should do that
-        {
-            // func parameter
-            std::string regreg = "%arg" + std::to_string(((-1) * entry.getOff() - 1));
-            this->stack->setEmmited(node.value, "%arg" + std::to_string(((-1) * entry.getOff() - 1)));
-            node.reg = regreg;
-            return;
-        }
         else
         {
             // local var
-            std::string type = getLLVMType(entry.getType());
-            std::string var_ptr = this->buffer.freshVar();
-            std::string rbp = this->stack->getBasePointer();
+            string type = getLLVMType(entry.getType());
+            string var_ptr = this->buffer.freshVar();
+            string rbp = this->stack->getBasePointer();
 
             this->buffer.emit(var_ptr + " = getelementptr i32, i32* " + rbp + ", i32 " + std::to_string(entry.getOff()));
-            std::string reg = this->buffer.freshVar();
+            string reg = this->buffer.freshVar();
             this->buffer.emit(reg + " = load i32, i32* " + var_ptr);
 
             if (type.compare("i8") == 0) // byteify the element
             {
-                std::string regreg = this->buffer.freshVar();
+                string regreg = this->buffer.freshVar();
                 this->buffer.emit(regreg + " = trunc i32 " + reg + " to i8");
                 reg = regreg;
             }
@@ -235,18 +227,16 @@ namespace generate
     //%binop_result = op i32 %left_value, %right_value
     void GenCode::genBinOp(ast::BinOp &node)
     {
-        debugprint("kdfmslkdnfm???!?" + node.right->type_def);
         // 2 reg: reg_right reg_left
-        std::string reg_right = node.right->reg;
-        std::string reg_left = node.left->reg;
-        std::string type = "i32";
+        string reg_right = node.right->reg;
+        string reg_left = node.left->reg;
+        string type = "i32";
 
         if (node.left->type_def.compare("int") == 0 && node.right->type_def.compare("byte") == 0)
         {
             // cast to right
             // %t5_ext = zext i8 %t5 to i32
-            std::string reg = this->buffer.freshVar();
-            debugprint("binop 1 " + reg);
+            string reg = this->buffer.freshVar();
             this->buffer.emit(reg + " = zext i8 " + node.right->reg + " to i32");
             // now the correct reg is the new one
             reg_right = reg;
@@ -254,8 +244,7 @@ namespace generate
         else if (node.left->type_def.compare("byte") == 0 && node.right->type_def.compare("int") == 0)
         {
             // cast to left
-            std::string reg = this->buffer.freshVar();
-            debugprint("binop 2 " + reg);
+            string reg = this->buffer.freshVar();
             this->buffer.emit(reg + " = zext i8 " + node.left->reg + " to i32");
             // now the correct reg is the new one
             reg_left = reg;
@@ -267,7 +256,7 @@ namespace generate
         }
         // no more casting needed
 
-        std::string op;
+        string op;
         switch (node.op)
         {
         case ast::BinOpType::ADD:
@@ -291,8 +280,8 @@ namespace generate
             break;
         }
         // reg_right, reg_left are of the same type.
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = " + op + " " + type + " " + reg_left + ", " + reg_right;
+        string new_reg = this->buffer.freshVar();
+        string llvm_line = new_reg + " = " + op + " " + type + " " + reg_left + ", " + reg_right;
         node.reg = new_reg;
         if (node.op == ast::BinOpType::DIV)
         {
@@ -301,10 +290,22 @@ namespace generate
         this->buffer.emit(llvm_line);
     }
 
+    void GenCode::genIcmp(string new_reg, string op, string left_reg, string right_reg)
+    {
+        string llvm_line = new_reg + " = icmp " + op + " i32 " + left_reg + ", " + right_reg;
+        this->buffer.emit(llvm_line);
+    }
+
+    void GenCode::genBoolIcmp(string new_reg, string reg)
+    {
+        string llvm_line = new_reg + " = icmp eq i1 " + reg + ", " + "1";
+        this->buffer.emit(llvm_line);
+    }
+
     //%relop_result = icmp op i32 %left_value, %right_value
     void GenCode::genRelOp(ast::RelOp &node)
     {
-        std::string op;
+        string op;
         switch (node.op)
         {
         case ast::RelOpType::EQ:
@@ -327,9 +328,8 @@ namespace generate
             break;
         }
         // if we are comparing different types:
-        std::string reg_right = node.right->reg;
-        std::string reg_left = node.left->reg;
-        debugprint(node.right->reg + " bruhrurh " + node.left->reg + "disco disco party party");
+        string reg_right = node.right->reg;
+        string reg_left = node.left->reg;
         // %extended = zext i1 %cond to i32
         if (node.left->type_def.compare("byte") == 0)
         {
@@ -342,8 +342,8 @@ namespace generate
             buffer.emit(reg_right + " = zext i8 " + node.right->reg + " to i32 ");
         }
 
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = icmp " + op + " i32 " + reg_left + ", " + reg_right;
+        string new_reg = this->buffer.freshVar();
+        string llvm_line = new_reg + " = icmp " + op + " i32 " + reg_left + ", " + reg_right;
         // emitting
         this->buffer.emit(llvm_line);
         // remembering who holds the information calculated
@@ -353,8 +353,8 @@ namespace generate
     //%not_result = xor i32 %value, true
     void GenCode::genNot(ast::Not &node)
     {
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = xor i1 " + node.exp->reg + ", true";
+        string new_reg = this->buffer.freshVar();
+        string llvm_line = new_reg + " = xor i1 " + node.exp->reg + ", true";
         this->buffer.emit(llvm_line);
         node.reg = new_reg;
     }
@@ -362,19 +362,18 @@ namespace generate
     //%and_result = and i32 %left_var, %right_var
     void GenCode::genAndLeft(ast::And &node)
     {
-        std::string check_right = this->buffer.freshLabel();
-        std::string false_lab = this->buffer.freshLabel();
-        std::string true_lab = this->buffer.freshLabel();
-        std::string end_lab = this->buffer.freshLabel();
+        string check_right = this->buffer.freshLabel();
+        string false_lab = this->buffer.freshLabel();
+        string true_lab = this->buffer.freshLabel();
+        string end_lab = this->buffer.freshLabel();
 
         node.false_lab = false_lab;
         node.true_lab = true_lab;
         node.end_lab = end_lab;
 
         // check left
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = icmp eq i1 " + node.left->reg + ", " + "1";
-        this->buffer.emit(llvm_line);
+        string new_reg = this->buffer.freshVar();
+        genBoolIcmp(new_reg, node.left->reg);
 
         this->buffer.emit("br i1 " + new_reg + ", label " + check_right + ", label " + false_lab + "\n");
         this->buffer.emitLabel(check_right);
@@ -383,9 +382,8 @@ namespace generate
     void GenCode::genAndRight(ast::And &node)
     {
         // check right
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = icmp eq i1 " + node.right->reg + ", " + "1";
-        this->buffer.emit(llvm_line);
+        string new_reg = this->buffer.freshVar();
+        genBoolIcmp(new_reg, node.right->reg);
         this->buffer.emit("br i1 " + new_reg + ", label " + node.true_lab + ", label " + node.false_lab + "\n");
 
         this->buffer.emitLabel(node.false_lab);
@@ -395,10 +393,10 @@ namespace generate
         this->buffer.emit("br label " + node.end_lab + "\n");
 
         this->buffer.emitLabel(node.end_lab);
-        std::string phi_reg = this->buffer.freshVar();
+        string phi_reg = this->buffer.freshVar();
 
         // %result = phi i32 [ true_reg, %if_true ], [ false_reg, %if_false ]
-        llvm_line = phi_reg + " = phi i1 [ true, " + node.true_lab + " ], [ false, " + node.false_lab + " ]\n";
+        string llvm_line = phi_reg + " = phi i1 [ true, " + node.true_lab + " ], [ false, " + node.false_lab + " ]\n";
         this->buffer.emit(llvm_line);
         node.reg = phi_reg;
     }
@@ -407,19 +405,19 @@ namespace generate
     // this is shit, need to do some store shit i think
     void GenCode::genOrLeft(ast::Or &node)
     {
-        std::string check_right = this->buffer.freshLabel();
-        std::string false_lab = this->buffer.freshLabel();
-        std::string true_lab = this->buffer.freshLabel();
-        std::string end_lab = this->buffer.freshLabel();
+        string check_right = this->buffer.freshLabel();
+        string false_lab = this->buffer.freshLabel();
+        string true_lab = this->buffer.freshLabel();
+        string end_lab = this->buffer.freshLabel();
 
         node.false_lab = false_lab;
         node.true_lab = true_lab;
         node.end_lab = end_lab;
 
         // check left
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = icmp eq i1 " + node.left->reg + ", " + "1";
-        this->buffer.emit(llvm_line);
+        string new_reg = this->buffer.freshVar();
+        genBoolIcmp(new_reg, node.left->reg);
+
         this->buffer.emit("br i1 " + new_reg + ", label " + true_lab + ", label " + check_right + "\n");
         this->buffer.emitLabel(check_right);
     }
@@ -427,22 +425,21 @@ namespace generate
     void GenCode::genOrRight(ast::Or &node)
     {
         // check right
-        std::string new_reg = this->buffer.freshVar();
-        std::string llvm_line = new_reg + " = icmp eq i1 " + node.right->reg + ", " + "1";
-        this->buffer.emit(llvm_line);
+        string new_reg = this->buffer.freshVar();
+        genBoolIcmp(new_reg, node.right->reg);
         this->buffer.emit("br i1 " + new_reg + ", label " + node.true_lab + ", label " + node.false_lab + "\n");
 
         this->buffer.emitLabel(node.false_lab);
-        this->buffer.emit("br label " + node.end_lab);
+        this->buffer.emit("br label " + node.end_lab + "\n");
 
         this->buffer.emitLabel(node.true_lab);
-        this->buffer.emit("br label " + node.end_lab);
+        this->buffer.emit("br label " + node.end_lab + "\n");
 
         this->buffer.emitLabel(node.end_lab);
-        std::string phi_reg = this->buffer.freshVar();
+        string phi_reg = this->buffer.freshVar();
 
         // %result = phi i32 [ true_reg, %if_true ], [ false_reg, %if_false ]
-        llvm_line = phi_reg + " = phi i1 [ true, " + node.true_lab + " ], [ false, " + node.false_lab + " ]\n";
+        string llvm_line = phi_reg + " = phi i1 [ true, " + node.true_lab + " ], [ false, " + node.false_lab + " ]\n";
         this->buffer.emit(llvm_line);
         node.reg = phi_reg;
     }
@@ -452,7 +449,7 @@ namespace generate
 
     void GenCode::genCast(ast::Cast &node)
     {
-        std::string src_type; // Get the source type
+        string src_type; // Get the source type
         if (node.exp->type_def.compare("int") == 0)
         {
             src_type = "i32";
@@ -464,17 +461,19 @@ namespace generate
         else
         {
             // what
-            std::cout << "wheres the doOR" << std::endl;
+            debugprint("wheres the doOR");
             exit(0);
         }
-        std::string dest_type = getLLVMType(node.target_type->getType()); // Get the destination type
+
+        string dest_type = getLLVMType(node.target_type->getType()); // Get the destination type
         if (dest_type.compare(src_type) == 0)
         {
             node.reg = node.exp->reg; // save the result register in the node
             // all good no worries
             return;
         }
-        std::string new_reg = this->buffer.freshVar(); // Get a new register name
+
+        string new_reg = this->buffer.freshVar(); // Get a new register name
         if (src_type == "i8" && dest_type == "i32")
         {
             // zeroextention from i8 to i32
@@ -488,17 +487,14 @@ namespace generate
         else
         {
             // huhh?
-            std::cerr << "shit that wasn't supposed to happen - happened. plz give us 3 bonus points for creativity" << std::endl;
+            debugprint("shit that wasn't supposed to happen - happened. plz give us 3 bonus points for creativity");
             exit(3);
         }
-        debugprint("incomind reg into the cast element " + new_reg);
         node.reg = new_reg; // save the result register in the node
     }
 
     // we don't need ya
-    void GenCode::genExpList(ast::ExpList &node)
-    {
-    }
+    void GenCode::genExpList(ast::ExpList &node) {}
 
     void GenCode::genCall(ast::Call &node)
     {
@@ -511,25 +507,21 @@ namespace generate
         auto formal = formals_types_of_func.begin();
 
         auto explist = node.args->getExpList();
-        std::string emitted_args;
+        string emitted_args;
         for (auto it = explist.begin(); it != explist.end(); ++it)
         {
             if ((*it)->type_def.compare("string") == 0)
             {
                 // need to generate [len + 1 x i8]
                 int len = std::dynamic_pointer_cast<ast::String>(*it)->value.length() + 1;
-                emitted_args.append(std::string("[").append(std::to_string(len)).append(" x i8] ").append(", "));
-                emitted_args.append(std::string("[").append(std::to_string(len)).append(" x i8]* ").append((*it)->reg));
+                emitted_args.append(string("[").append(std::to_string(len)).append(" x i8] ").append(", "));
+                emitted_args.append(string("[").append(std::to_string(len)).append(" x i8]* ").append((*it)->reg));
             }
             else if ((*it)->type_def.compare("byte") == 0)
             {
                 if ((*formal) == ast::BuiltInType::INT)
                 {
-                    /*
-                        std::string casted = buffer.freshVar();
-                        buffer.emit(casted + " = zext i8 " + init_val + " to i32");
-                    */
-                    std::string casted = buffer.freshVar();
+                    string casted = buffer.freshVar();
                     buffer.emit(casted + " = zext i8 " + (*it)->reg + " to i32");
                     emitted_args.append("i32 ").append(casted);
                 }
@@ -542,21 +534,13 @@ namespace generate
             {
                 if ((*formal) == ast::BuiltInType::INT)
                 {
-                    /*
-                        std::string casted = buffer.freshVar();
-                        buffer.emit(casted + " = zext i8 " + init_val + " to i32");
-                    */
-                    std::string casted = buffer.freshVar();
+                    string casted = buffer.freshVar();
                     buffer.emit(casted + " = zext i1 " + (*it)->reg + " to i32");
                     emitted_args.append("i32 ").append(casted);
                 }
                 else if ((*formal) == ast::BuiltInType::BYTE)
                 {
-                    /*
-                        std::string casted = buffer.freshVar();
-                        buffer.emit(casted + " = zext i8 " + init_val + " to i32");
-                    */
-                    std::string casted = buffer.freshVar();
+                    string casted = buffer.freshVar();
                     buffer.emit(casted + " = zext i1 " + (*it)->reg + " to i8");
                     emitted_args.append("i8 ").append(casted);
                 }
@@ -589,7 +573,7 @@ namespace generate
         }
         else
         {
-            std::string new_reg = this->buffer.freshVar();
+            string new_reg = this->buffer.freshVar();
             node.func_id->reg = new_reg;
             string emitted_return_type;
             switch (entry.getRetType())
@@ -633,7 +617,7 @@ namespace generate
             buffer.emit("ret void");
         else
         {
-            std::string return_type;
+            string return_type;
             if (node.type_def.compare("string") == 0)
             {
                 return_type = "i8*";
@@ -673,7 +657,7 @@ namespace generate
 
     void GenCode::genIfCondition(ast::If &node)
     {
-        std::string true_lab, false_lab, end_lab;
+        string true_lab, false_lab, end_lab;
         // undertale mentioned!??!?!?!?!?!??!?!
         true_lab = this->buffer.freshLabel();
         false_lab = this->buffer.freshLabel();
@@ -731,7 +715,7 @@ namespace generate
 
     void GenCode::genWhileCondition(ast::While &node)
     {
-        std::string head_lab, body_lab, end_lab;
+        string head_lab, body_lab, end_lab;
         head_lab = this->buffer.freshLabel();
         body_lab = this->buffer.freshLabel();
         end_lab = this->buffer.freshLabel();
@@ -763,17 +747,17 @@ namespace generate
     {
         // assuming syntax is valid (in us we trust)
         symbol_table::SymTableEntry entry = this->stack->isInsideSymolTable_byFallOutBoy(node.id->value);
-        std::string var_reg = this->buffer.freshVar();
+        string var_reg = this->buffer.freshVar();
         this->stack->setEmmited(node.id->getVal(), var_reg);
         // Allocate space for the variable on the stack
-        std::string type_in_llvm = getLLVMType(node.type->getType());
-        std::string init_val = "0"; // batel did not agree for this to be 3 :(()) shiran sad
+        string type_in_llvm = getLLVMType(node.type->getType());
+        string init_val = "0"; // batel did not agree for this to be 3 :(()) shiran sad
         if (node.init_exp)
         {
             init_val = node.init_exp->reg;
             if (node.type->getType() == ast::BuiltInType::INT && node.init_exp->type_def.compare("byte") == 0)
-            { // %t5_ext = zext i8 %t5 to i32
-                std::string casted = buffer.freshVar();
+            {
+                string casted = buffer.freshVar();
                 buffer.emit(casted + " = zext i8 " + init_val + " to i32");
                 init_val = casted;
             }
@@ -786,13 +770,12 @@ namespace generate
     {
         // feeling like genAssign? Try genOside
         symbol_table::SymTableEntry entry = this->stack->isInsideSymolTable_byFallOutBoy(node.id->getVal());
-        std::string var_reg = entry.getEmittedName();
+        string var_reg = entry.getEmittedName();
 
         this->stack->setEmmited(node.id->getVal(), var_reg);
-        std::string type_in_llvm = getLLVMType(entry.getType());
+        string type_in_llvm = getLLVMType(entry.getType());
         // Emit store instruction to update the variable
         generateStoreVar(this->stack->getBasePointer(), entry.getOff(), node.exp->reg, type_in_llvm);
-        // this->buffer.emit("store " + type_in_llvm + " " + node.exp->reg + ", " + type_in_llvm + "* " + var_reg);
     }
 
     // useless
@@ -817,18 +800,25 @@ namespace generate
         // need ret either way. two rets never killed anyone
         // honestly if its such a big deal the optimizor bitch will handle it
         // fucking allocate the base stack
-        std::string func_ret_type = getLLVMType(node.getType());
+        string func_ret_type = getLLVMType(node.getType());
 
-        std::string emitted_formals = "";
-        auto formral_func_type = node.formalTypes();
+        string emitted_formals = "";
+
+        // need to set formals registers
+        auto formal = node.formals->getFormals();
+        auto it_formal = formal.begin();
         int i = 0;
-        for (auto it = formral_func_type.begin(); it != formral_func_type.end(); ++it)
+        
+        for (auto it = formal.begin(); it != formal.end(); ++it)
         {
-            if ((*it) == ast::BuiltInType::BYTE)
+            string reg = string("%arg").append(to_string(i));
+            debugprint(reg + "dfjnkdj " + (*it_formal)->id->getVal());
+            this->stack->setEmmited((*it_formal)->id->getVal(), reg);
+            if ((*it)->type->getType() == ast::BuiltInType::BYTE)
             {
-                emitted_formals.append("i8 ").append("%arg").append(to_string(i));
+                emitted_formals.append("i8 ").append(reg);
             }
-            else if ((*it) == ast::BuiltInType::BOOL)
+            else if ((*it)->type->getType() == ast::BuiltInType::BOOL)
             {
                 emitted_formals.append("i1 ").append("%arg").append(to_string(i));
             }
@@ -837,12 +827,22 @@ namespace generate
                 emitted_formals.append("i32 ").append("%arg").append(to_string(i));
             }
             i++;
-            if (it + 1 != formral_func_type.end())
+            it_formal++;
+            if (it + 1 != formal.end())
                 emitted_formals.append(", "); // we not finished
         }
 
         this->buffer.emit("define " + func_ret_type + " @" + node.getID() + "(" + emitted_formals + "){");
         this->stack->setBasePointer(allocateFunctionStack());
+
+        // save formals in stack
+        i = 0;
+        int offset = -1;
+        for (auto it = formal.begin(); it != formal.end(); ++it) {
+            generateStoreVar(this->stack->getBasePointer(), offset, string("%arg").append(to_string(i)), getLLVMType((*it)->type->getType()));
+            i++;
+            offset--;
+        }
     }
 
     void GenCode::genFuncDeclClosery(ast::FuncDecl &node)
@@ -853,6 +853,7 @@ namespace generate
             this->buffer.emit("ret void\n}");
         else
             this->buffer.emit("}");
+        this->stack->popBasePointer();
     }
 
     // another useless bitch

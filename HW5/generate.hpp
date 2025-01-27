@@ -121,6 +121,10 @@ namespace generate
 
         void genBinOp(ast::BinOp &node);
 
+        void genIcmp(string new_reg, string op, string left_reg, string right_reg);
+
+        void genBoolIcmp(string new_reg, string reg);
+
         void genRelOp(ast::RelOp &node);
 
         void genNot(ast::Not &node);

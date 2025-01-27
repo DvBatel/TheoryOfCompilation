@@ -336,3 +336,20 @@ void main()
     printi(g);
     printi(notprinti(4b));
 }
+
+
+// test 16 ___ check we didn't accidentally create a pointer - bc we don't save argsi for i= something.
+//output - 5 5 2 5
+
+void bruh(int y) {
+    printi(y);  // 5
+    y = 2;
+    printi(y);  // 2
+}
+
+void main() {
+    int x = 5;
+    printi(x);  // 5
+    bruh(x);
+    printi(x);  // 5
+}

@@ -16,8 +16,8 @@ namespace stack
     {
     private:
         std::vector<symbol_table::SymTable> m_table;
+        std::vector<std::string> m_base_pointer;
         int m_offset = 0;
-        std::string m_base_pointer = "";
 
     public:
         Stack() = default;
@@ -48,6 +48,8 @@ namespace stack
         void setBasePointer(std::string rbp);
 
         std::string getBasePointer();
+        
+        void popBasePointer();
 
         bool checkIfMain(const std::string &id, const ast::BuiltInType &returnType, const std::vector<ast::BuiltInType> &paramTypes);
     };

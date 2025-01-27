@@ -7,7 +7,7 @@ void debugprint1(std::string a)
 {
     if (DEBUG)
     {
-        std::cout << " -- debug -- " << a << std::endl;
+        std::cout << "; -- debug stack -- " << a << std::endl;
     }
 }
 
@@ -64,27 +64,23 @@ symbol_table::SymTableEntry stack::Stack::isInsideSymolTable_byFallOutBoy(string
     return nullEntry;
 }
 
-
 void stack::Stack::setEmmited(string name, string reg)
 {
     for (auto it = m_table.begin(); it != m_table.end(); it++)
     {
-        std::vector<symbol_table::SymTableEntry>& bebe = (*it).GetDaBaby();
+        std::vector<symbol_table::SymTableEntry> &bebe = (*it).GetDaBaby();
         for (auto it_e = bebe.begin(); it_e != bebe.end(); it_e++)
         {
             if ((*it_e).getNem().compare(name) == 0)
             {
                 // set hoo ha
                 (*it_e).setEmittedName(reg);
-                debugprint1(reg);
                 return;
             }
         }
     }
-    debugprint1( "did not find: " + name  );
-    
+    debugprint1("did not find: " + name);
 }
-
 
 int stack::Stack::getLatestOffset()
 {
@@ -98,10 +94,15 @@ bool stack::Stack::checkIfMain(const std::string &id, const ast::BuiltInType &re
 
 void stack::Stack::setBasePointer(std::string rbp)
 {
-    this->m_base_pointer = rbp;
+    this->m_base_pointer.push_back(rbp);
 }
 
 std::string stack::Stack::getBasePointer()
 {
-    return this->m_base_pointer;
+    return this->m_base_pointer.back();
+}
+
+void stack::Stack::popBasePointer()
+{
+    this->m_base_pointer.pop_back();
 }
