@@ -218,6 +218,12 @@ namespace generate
                 this->buffer.emit(regreg + " = trunc i32 " + reg + " to i8");
                 reg = regreg;
             }
+            else if (type.compare("i1") == 0) // byteify the element
+            {
+                string regreg = this->buffer.freshVar();
+                this->buffer.emit(regreg + " = trunc i32 " + reg + " to i1");
+                reg = regreg;
+            }
 
             // Assign the computed value to the node's register
             node.reg = reg;
@@ -796,7 +802,6 @@ namespace generate
         for (auto it = formal.begin(); it != formal.end(); ++it)
         {
             string reg = string("%arg").append(to_string(i));
-            debugprint(reg + "dfjnkdj " + (*it_formal)->id->getVal());
             emitted_formals.append(getLLVMType((*it)->type->getType())).append(" ").append(reg);
 
             i++;
