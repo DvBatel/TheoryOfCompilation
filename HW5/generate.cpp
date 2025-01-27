@@ -820,11 +820,11 @@ namespace generate
             }
             else if ((*it)->type->getType() == ast::BuiltInType::BOOL)
             {
-                emitted_formals.append("i1 ").append("%arg").append(to_string(i));
+                emitted_formals.append("i1 ").append(reg);
             }
             else
             {
-                emitted_formals.append("i32 ").append("%arg").append(to_string(i));
+                emitted_formals.append("i32 ").append(reg);
             }
             i++;
             it_formal++;
