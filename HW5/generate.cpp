@@ -575,23 +575,7 @@ namespace generate
         {
             string new_reg = this->buffer.freshVar();
             node.func_id->reg = new_reg;
-            string emitted_return_type;
-            switch (entry.getRetType())
-            {
-            case ast::BuiltInType::BOOL:
-                emitted_return_type = "i1";
-                break;
-            case ast::BuiltInType::INT:
-                emitted_return_type = "i32";
-                break;
-            case ast::BuiltInType::BYTE:
-                emitted_return_type = "i8";
-                break;
-            default:
-                // WHAT ARE YOU
-                debugprint("huh? why is the type " + to_string(entry.getRetType()) + "? ");
-                break;
-            }
+            string emitted_return_type = getLLVMType(entry.getRetType());
 
             buffer.emit(node.func_id->reg + " = call " + emitted_return_type + " @" + node.func_id->value + "(" + emitted_args + ")");
             node.reg = node.func_id->reg;
