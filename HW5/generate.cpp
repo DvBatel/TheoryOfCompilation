@@ -813,19 +813,8 @@ namespace generate
         {
             string reg = string("%arg").append(to_string(i));
             debugprint(reg + "dfjnkdj " + (*it_formal)->id->getVal());
-            this->stack->setEmmited((*it_formal)->id->getVal(), reg);
-            if ((*it)->type->getType() == ast::BuiltInType::BYTE)
-            {
-                emitted_formals.append("i8 ").append(reg);
-            }
-            else if ((*it)->type->getType() == ast::BuiltInType::BOOL)
-            {
-                emitted_formals.append("i1 ").append(reg);
-            }
-            else
-            {
-                emitted_formals.append("i32 ").append(reg);
-            }
+            emitted_formals.append(getLLVMType((*it)->type->getType())).append(" ").append(reg);
+
             i++;
             it_formal++;
             if (it + 1 != formal.end())
