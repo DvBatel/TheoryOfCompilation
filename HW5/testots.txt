@@ -353,3 +353,7 @@ void main() {
     bruh(x);
     printi(x);  // 5
 }
+
+void main() {
+    byte x = 3b / 0b;
+}

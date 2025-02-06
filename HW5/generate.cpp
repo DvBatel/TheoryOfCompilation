@@ -1,7 +1,7 @@
 #include "generate.hpp"
 
 // debugging print func
-const int DEBUG = 1;
+const int DEBUG = 0;
 void debugprint(string a)
 {
     if (DEBUG)
@@ -291,6 +291,13 @@ namespace generate
         node.reg = new_reg;
         if (node.op == ast::BinOpType::DIV)
         {
+            if (node.left->type_def.compare("byte") == 0 && node.right->type_def.compare("byte") == 0)
+            {
+                string reg = this->buffer.freshVar();
+                this->buffer.emit(reg + " = zext i8 " + node.right->reg + " to i32");
+                // now the correct reg is the new one
+                reg_right = reg;
+            }
             buffer.emit("call void @check_division(i32 " + reg_right + ")");
         }
         this->buffer.emit(llvm_line);
@@ -559,7 +566,8 @@ namespace generate
             {
                 emitted_args.append("i32 ").append((*it)->reg);
             }
-            if (formal != formals_types_of_func.end()) {
+            if (formal != formals_types_of_func.end())
+            {
                 formal++;
             }
             if (it + 1 != explist.end())
@@ -798,7 +806,7 @@ namespace generate
         auto formal = node.formals->getFormals();
         auto it_formal = formal.begin();
         int i = 0;
-        
+
         for (auto it = formal.begin(); it != formal.end(); ++it)
         {
             string reg = string("%arg").append(to_string(i));
@@ -816,7 +824,8 @@ namespace generate
         // save formals in stack
         i = 0;
         int offset = -1;
-        for (auto it = formal.begin(); it != formal.end(); ++it) {
+        for (auto it = formal.begin(); it != formal.end(); ++it)
+        {
             generateStoreVar(this->stack->getBasePointer(), offset, string("%arg").append(to_string(i)), getLLVMType((*it)->type->getType()));
             i++;
             offset--;
